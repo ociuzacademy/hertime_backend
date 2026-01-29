@@ -653,6 +653,8 @@ class PCODPredictionAPI(APIView):
             return Response({
                 "status": "success",
                 "message": "PCOD prediction generated successfully",
+                "user_id": user.id,
+                "user_name": user.name,
                 "prediction_id": saved_obj.id,
                 "result": result_label,
                 "probabilities": prob_map,
