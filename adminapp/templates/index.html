@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>HerTime Admin - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            background-color: #fff5f7;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Navbar */
+        .navbar-custom {
+            background-color: #f8b6c1;
+            padding: 15px 35px;
+            font-weight: 600;
+        }
+
+        .navbar-custom a {
+            color: white;
+            margin-left: 15px;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .navbar-custom a:hover {
+            color: #ffe4ea;
+        }
+
+        /* Dashboard Heading */
+        .dashboard-title {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #f48ca0;
+        }
+
+        /* Glass Cards */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            font-size: 45px;
+            color: #f48ca0;
+            margin-bottom: 10px;
+        }
+
+        .stat-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Card Layout */
+        .stats-container {
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+
+        /* Dropdown menu background */
+        .dropdown-menu {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 8px 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Dropdown item text */
+        .dropdown-menu .dropdown-item {
+            color: #333 !important;
+            font-weight: 500;
+            padding: 10px 20px;
+        }
+
+        /* Hover effect */
+        .dropdown-menu .dropdown-item:hover {
+            background-color: #f8b6c1;
+            color: white !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-custom d-flex justify-content-between">
+        <div class="logo text-white fs-4 fw-bold">HerTime Admin</div>
+        <div>
+            <a href="{% url 'index' %}">Home</a>
+            <a href="{% url 'category_page' %}">Categories</a>
+
+            <div class="dropdown d-inline-block">
+                <a class="dropdown-toggle text-white" data-bs-toggle="dropdown" href="#">Products</a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'add_product' %}">Add Product</a></li>
+                    <li><a class="dropdown-item" href="{% url 'view_products' %}">View Products</a></li>
+                </ul>
+            </div>
+
+            <div class="dropdown d-inline-block">
+                <a class="dropdown-toggle text-white" data-bs-toggle="dropdown" href="#">Books</a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'add_book' %}">Add Book</a></li>
+                    <li><a class="dropdown-item" href="{% url 'view_books' %}">View Books</a></li>
+                </ul>
+            </div>
+
+            <a href="{% url 'admin_view_orders' %}">Orders</a>
+            <a href="{% url 'admin_view_users' %}">Users</a>
+            <a href="{% url 'admin_login' %}">Logout</a>
+        </div>
+    </nav>
+    {% block content %}
+
+    <!-- Dashboard Title -->
+    <h2 class="dashboard-title">Admin Dashboard</h2>
+
+
+    <!-- Stats Section -->
+    <div class="container stats-container">
+        <div class="row g-4">
+
+            <!-- Active Users -->
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <i class="bi bi-people-fill stat-icon"></i>
+                    <div class="stat-title">Active Users</div>
+                    <div class="stat-value">{{ active_users }}</div>
+                </div>
+            </div>
+
+            <!-- Products Sold -->
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <i class="bi bi-bag-fill stat-icon"></i>
+                    <div class="stat-title">Products Sold</div>
+                    <div class="stat-value">{{ products_sold }}</div>
+                </div>
+            </div>
+
+            <!-- New Signups (Optional) -->
+            <!-- <div class="col-md-4">
+            <div class="stat-card">
+                <i class="bi bi-person-plus-fill stat-icon"></i>
+                <div class="stat-title">New Signups</div>
+                <div class="stat-value">{{ new_signups }}</div>
+            </div>
+        </div> -->
+
+        </div>
+    </div>
+
+    {% endblock %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

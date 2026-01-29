@@ -1,0 +1,79 @@
+{% extends "index.html" %}
+
+{% block content %}
+
+<div style="max-width: 600px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h2 style="color: #f48ca0; text-align: center; margin-bottom: 20px;">Manage Categories</h2>
+
+    <!-- Add Category Form -->
+    {% if not edit_mode %}
+    <form method="POST">
+        {% csrf_token %}
+        <div style="margin-bottom: 15px;">
+            <label for="name" style="display: block; font-weight: bold; margin-bottom: 5px;">Category Name</label>
+            <input type="text" name="name" id="name" class="form-control" required
+                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        </div>
+        <button type="submit" style="background: #f48ca0; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%;">
+            Add Category
+        </button>
+    </form>
+    {% endif %}
+
+    <!-- Edit Category Form -->
+    {% if edit_mode %}
+    <form method="POST">
+        {% csrf_token %}
+        <div style="margin-bottom: 15px;">
+            <label for="name" style="display: block; font-weight: bold; margin-bottom: 5px;">Edit Category</label>
+            <input type="text" name="name" id="name" class="form-control" value="{{ category.name }}" required
+                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" style="flex: 1; background: #f48ca0; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                Update
+            </button>
+            <a href="{% url 'category_page' %}" style="flex: 1; background: #6c757d; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-align: center; text-decoration: none;">
+                Cancel
+            </a>
+        </div>
+    </form>
+    {% endif %}
+
+</div>
+
+<!-- Category List -->
+<div style="max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h4 style="color: #f48ca0; margin-bottom: 15px;">Category List</h4>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f48ca0; color: white;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">#</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Category Name</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat in categories %}
+            <tr style="border: 1px solid #ddd;">
+                <td style="padding: 12px; border: 1px solid #ddd;">{{ forloop.counter }}</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">{{ cat.name }}</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">
+                    <a href="?edit={{ cat.id }}" style="background: #f48ca0; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; margin-right: 5px; display: inline-block;">Edit</a>
+                    <a href="{% url 'delete_category' cat.id %}" 
+                       style="background: #dc3545; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; display: inline-block;"
+                       onclick="return confirm('Are you sure?')">
+                       Delete
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr style="border: 1px solid #ddd;">
+                <td colspan="3" style="padding: 12px; text-align: center; border: 1px solid #ddd;">No Categories Found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+.order-table {
+    font-size: 18px;  /* Bigger readable font */
+    width: 100%;
+}
+
+.order-table th {
+    font-size: 20px;
+    padding: 16px !important;
+}
+
+.order-table td {
+    padding: 16px !important;
+}
+
+.order-table .btn {
+    font-size: 16px;
+    padding: 8px 14px;
+}
+
+.order-table .badge {
+    font-size: 14px;
+    padding: 6px 10px;
+}
+</style>
+
+
+<div class="container mt-4">
+
+    <h2 class="text-center mb-4" style="color:#f48ca0;">Admin - View All Orders</h2>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" id="orderTabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#single">Single Product Orders</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#cart">Cart Orders</a>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-4">
+
+        <!-- -------------------------- -->
+        <!-- TAB 1 — Single Orders -->
+        <!-- -------------------------- -->
+
+        <div class="tab-pane fade show active" id="single">
+
+            {% if single_orders %}
+           <table class="table table-bordered text-center table-striped order-table">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>User</th>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>View</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in single_orders %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ o.user.name }}</td>
+                        <td>{{ o.product.name }}</td>
+                        <td>{{ o.quantity }}</td>
+                        <td>₹{{ o.total_price }}</td>
+                        <td><span class="badge bg-success">{{ o.status }}</span></td>
+
+                        <!-- View Button -->
+                        <td>
+                            <a href="{% url 'admin_order_details' 'single' o.id %}" 
+                               class="btn btn-sm btn-primary">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-center">No single product orders found.</p>
+            {% endif %}
+        </div>
+
+        <!-- -------------------------- -->
+        <!-- TAB 2 — Cart Orders -->
+        <!-- -------------------------- -->
+
+        <div class="tab-pane fade" id="cart">
+
+            {% if cart_orders %}
+            <table class="table table-bordered text-center table-striped order-table">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>User</th>
+                        <th>Total Amount</th>
+                        <th>Payment Type</th>
+                        <th>Status</th>
+                        <th>View</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for order in cart_orders %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ order.payment.user.name }}</td>
+                        <td>₹{{ order.payment.total_amount }}</td>
+                        <td>{{ order.payment.payment_type|title }}</td>
+                        <td><span class="badge bg-success">{{ order.payment.status }}</span></td>
+
+                        <td>
+                            <a href="{% url 'admin_order_details' 'cart' order.payment.id %}" 
+                               class="btn btn-sm btn-primary">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% else %}
+            <p class="text-center">No cart orders found.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

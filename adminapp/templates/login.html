@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HerTime | Admin Login</title>
+<style>
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background-color: #fff6f8;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .login-container {
+        background: #ffffff;
+        padding: 35px 30px;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(244, 140, 160, 0.2);
+        width: 320px;
+        text-align: center;
+    }
+
+    .login-container h1 {
+        margin-bottom: 10px;
+        color: #f06292;
+        font-size: 26px;
+    }
+
+    .login-container p {
+        font-size: 14px;
+        color: #777;
+        margin-bottom: 20px;
+    }
+
+    .login-container input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #f48ca0, #f06292);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s ease;
+    }
+    .login-btn:hover {
+        background: linear-gradient(135deg, #e75480, #f06292);
+    }
+
+    .error-msg {
+        color: red;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+
+    .forgot {
+        display: block;
+        margin-top: 12px;
+        font-size: 13px;
+        color: #f06292;
+        text-decoration: none;
+    }
+    .forgot:hover {
+        text-decoration: underline;
+    }
+
+    /* Cute icon (menstrual health symbol) */
+    .icon {
+        font-size: 40px;
+        color: #f48ca0;
+        margin-bottom: 10px;
+    }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="icon">🌸</div>
+    <h1>HerTime Admin</h1>
+    <p>Login to manage period & wellness data</p>
+
+    <form method="POST" action="{% url 'admin_login' %}">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Admin Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button class="login-btn" type="submit">Login</button>
+    </form>
+
+    <a href="#" class="forgot">Forgot Password?</a>
+</div>
+
+</body>
+</html>

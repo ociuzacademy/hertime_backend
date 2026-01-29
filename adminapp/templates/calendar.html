@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HerTime Admin - Full Calendar</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #fff6f8;
+        color: #333;
+    }
+    .navbar {
+        background-color: #f8b6c1;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+    }
+    .navbar h1 {
+        margin: 0;
+        font-size: 20px;
+    }
+    .calendar-section {
+        margin: 20px;
+    }
+    .calendar-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .calendar-header button {
+        background-color: #f48ca0;
+        border: none;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    .calendar-header h1 {
+        margin: 0;
+        color: #f48ca0;
+        font-size: 18px;
+    }
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    .calendar {
+        background: white;
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .calendar h2 {
+        text-align: center;
+        color: #f48ca0;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 5px;
+    }
+    th, td {
+        padding: 3px;
+        text-align: center;
+        font-size: 10px;
+    }
+    th {
+        background-color: #f8b6c1;
+        color: white;
+    }
+    td {
+        border: 1px solid #eee;
+    }
+    td:hover {
+        background-color: #ffe4eb;
+        cursor: pointer;
+    }
+    .today {
+        background-color: #f48ca0 !important;
+        color: white;
+        font-weight: bold;
+        border-radius: 4px;
+    }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>HerTime - Full Year Calendar</h1>
+    <a href="{% url 'index' %}" style="color:white;text-decoration:none;">Back to Home</a>
+</div>
+
+<section class="calendar-section">
+    <div class="calendar-header">
+        <button onclick="changeYear(-1)">Previous Year</button>
+        <h1 id="yearTitle"></h1>
+        <button onclick="changeYear(1)">Next Year</button>
+    </div>
+    <div class="calendar-grid" id="yearCalendar"></div>
+</section>
+
+<script>
+let currentYear = new Date().getFullYear();
+
+function generateYearCalendar(year) {
+    const container = document.getElementById("yearCalendar");
+    const yearTitle = document.getElementById("yearTitle");
+    yearTitle.textContent = year;
+    container.innerHTML = "";
+
+    const months = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+    ];
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const today = new Date();
+
+    months.forEach((monthName, monthIndex) => {
+        let html = `<div class="calendar"><h2>${monthName}</h2><table><tr>`;
+        days.forEach(d => html += `<th>${d}</th>`);
+        html += "</tr><tr>";
+
+        const firstDay = new Date(year, monthIndex, 1).getDay();
+        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay; i++) html += "<td></td>";
+        for (let day = 1; day <= daysInMonth; day++) {
+            let isToday = (day === today.getDate() && monthIndex === today.getMonth() && year === today.getFullYear());
+            html += `<td class="${isToday ? 'today' : ''}">${day}</td>`;
+            if ((day + firstDay) % 7 === 0) html += "</tr><tr>";
+        }
+        html += "</tr></table></div>";
+        container.innerHTML += html;
+    });
+}
+
+function changeYear(step) {
+    currentYear += step;
+    generateYearCalendar(currentYear);
+}
+
+generateYearCalendar(currentYear);
+</script>
+
+</body>
+</html>

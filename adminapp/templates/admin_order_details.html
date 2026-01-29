@@ -1,0 +1,113 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+.details-card {
+    font-size: 13px;       /* Smaller text */
+    line-height: 1.6;
+}
+
+.details-card h4 {
+    font-size: 16px;       /* Smaller section headings */
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.details-card p {
+    font-size: 13px;       /* Normal small paragraph text */
+    margin-bottom: 6px;    
+}
+
+.details-card b {
+    font-size: 13px;       /* Reduce bold labels size */
+    font-weight: 600;
+}
+
+.details-card table {
+    font-size: 13px;
+}
+
+.details-card hr {
+    margin: 15px 0;
+}
+</style>
+
+
+<div class="container mt-4">
+
+    <a href="{% url 'admin_view_orders' %}" class="btn btn-secondary mb-3">← Back</a>
+
+    <h2 class="mb-4" style="color:#f48ca0;">Order Details</h2>
+
+    <!-- SINGLE ORDER DETAILS -->
+    {% if type == "single" %}
+<div class="card p-4 shadow details-card">
+
+
+        <h4>User Information</h4>
+        <p><b>Name:</b> {{ order.user.name }}</p>
+        <p><b>Phone:</b> {{ order.user.phone }}</p>
+        <p><b>Address:</b> {{ order.user.address }}</p>
+
+        <hr>
+
+        <h4>Order Information</h4>
+        <p><b>Product:</b> {{ order.product.name }}</p>
+        <p><b>Category:</b> {{ order.category.name }}</p>
+        <p><b>Quantity:</b> {{ order.quantity }}</p>
+        <p><b>Total Price:</b> ₹{{ order.total_price }}</p>
+        <p><b>Status:</b> {{ order.status }}</p>
+        <p><b>Date:</b> {{ order.booking_date }}</p>
+
+    </div>
+    {% endif %}
+
+    <!-- CART ORDER DETAILS -->
+    {% if type == "cart" %}
+    <div class="card p-4 shadow details-card">
+
+
+        <h4>User Information</h4>
+        <p><b>Name:</b> {{ payment.user.name }}</p>
+        <p><b>Phone:</b> {{ payment.user.phone }}</p>
+        <p><b>Address:</b> {{ payment.user.address }}</p>
+
+        <hr>
+
+        <h4>Payment Information</h4>
+        <p><b>Total Amount:</b> ₹{{ payment.total_amount }}</p>
+        <p><b>Payment Type:</b> {{ payment.payment_type }}</p>
+        <p><b>Status:</b> {{ payment.status }}</p>
+        <p><b>Date:</b> {{ payment.created_at }}</p>
+
+        <hr>
+
+        <h4>Items:</h4>
+
+        <table class="table table-bordered text-center">
+            <thead class="table-secondary">
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.category.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>₹{{ item.total_price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
