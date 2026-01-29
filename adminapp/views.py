@@ -5,32 +5,36 @@ from django.shortcuts import render
 # def index(request):
 #     return render(request, 'index.html')
 from django.utils.timezone import now, timedelta
-from userapp.models import tbl_register
-from userapp.models import ProductBooking, Cart
-
+from django.utils.timezone import now, timedelta
+from userapp.models import (
+    tbl_register,
+    ProductBooking,
+    Cart,
+    HospitalBooking,
+    tbl_hospital_doctor_register
+)
 def index(request):
 
-    # 1️⃣ Count of active users
+    # 1️⃣ Active Users
     active_users = tbl_register.objects.count()
 
-    # 2️⃣ Count products sold = single product orders + cart quantities
-    single_orders_count = ProductBooking.objects.all().count()
+    # 2️⃣ Products Sold
+    single_orders_count = ProductBooking.objects.count()
     cart_items_count = Cart.objects.filter(status="completed").count()
-
     products_sold = single_orders_count + cart_items_count
 
-    # 3️⃣ Count users registered in last 7 days
-    seven_days_ago = now() - timedelta(days=7)
-    new_signups = tbl_register.objects.filter(
-        created_at__gte=seven_days_ago
-    ).count() if hasattr(tbl_register, 'created_at') else 0
+    # 3️⃣ Total Hospital Bookings
+    total_bookings = HospitalBooking.objects.filter(is_booked=True).count()
+
+    # 4️⃣ Total Doctors (only approved doctors)
+    total_doctors = tbl_hospital_doctor_register.objects.filter(status='approved').count()
 
     return render(request, "index.html", {
         "active_users": active_users,
         "products_sold": products_sold,
-        "new_signups": new_signups,
+        "total_bookings": total_bookings,
+        "total_doctors": total_doctors,
     })
-
 
 def calendar(request):
     return render(request, 'calendar.html')
@@ -279,3 +283,73 @@ from userapp.models import tbl_register
 def admin_view_users(request):
     users = tbl_register.objects.all().order_by('-id')   # latest first
     return render(request, "admin_view_users.html", {"users": users})
+
+
+
+
+
+
+from django.shortcuts import render
+from userapp.models import  tbl_hospital_doctor_register
+from django.shortcuts import render, redirect, get_object_or_404
+
+# ✅ View all pending doctors
+def view_pending_doctors(request):
+    hospital_pending = tbl_hospital_doctor_register.objects.filter(status='pending')
+    return render(request, 'pending_doctors.html', {
+        'hospital_pending': hospital_pending
+    })
+
+
+
+# ✅ Approve hospital doctor
+def approve_hospital_doctor(request, doctor_id):
+    doctor = get_object_or_404(tbl_hospital_doctor_register, id=doctor_id)
+    doctor.status = 'approved'
+    doctor.save()
+    return redirect('view_pending_doctors')
+
+
+# ✅ Reject hospital doctor
+def reject_hospital_doctor(request, doctor_id):
+    doctor = get_object_or_404(tbl_hospital_doctor_register, id=doctor_id)
+    doctor.status = 'rejected'
+    doctor.save()
+    return redirect('view_pending_doctors')
+
+
+
+def view_approved_doctors(request):
+   
+    hospital_approved = tbl_hospital_doctor_register.objects.filter(status='approved')
+    return render(request, 'approved_doctors.html', {
+        
+        'hospital_approved': hospital_approved
+    })
+
+
+def view_rejected_doctors(request):
+    hospital_rejected = tbl_hospital_doctor_register.objects.filter(status='rejected')
+    return render(request, 'rejected_doctors.html', {
+        'hospital_rejected': hospital_rejected
+    })
+
+
+
+from django.shortcuts import render
+from userapp.models import  HospitalBooking
+
+from django.shortcuts import render
+from userapp.models import HospitalBooking
+
+def admin_view_hospital_bookings(request):
+    hospital_bookings = (
+        HospitalBooking.objects
+        .select_related('user', 'doctor')
+        
+        .order_by('-date', '-id')
+    )
+
+    return render(request, 'view_all_bookings.html', {
+        'hospital_bookings': hospital_bookings
+    })

@@ -18,5 +18,14 @@ urlpatterns = [
     path("admin/users/", views.admin_view_users, name="admin_view_users"),
     path('admin/order-details/<str:order_type>/<int:order_id>/', views.admin_order_details, name='admin_order_details'),
     
+    path('view_pending_doctors/', views.view_pending_doctors, name='view_pending_doctors'),
+    path('view-all-bookings/', views.admin_view_hospital_bookings, name='view_all_bookings'),
+    # Hospital Doctor Actions
+    path('approve_hospital_doctor/<int:doctor_id>/', views.approve_hospital_doctor, name='approve_hospital_doctor'),
+    path('reject_hospital_doctor/<int:doctor_id>/', views.reject_hospital_doctor, name='reject_hospital_doctor'),
+
+    path('view_approved_doctors/', views.view_approved_doctors, name='view_approved_doctors'),
+
+    path('view_rejected_doctors/', views.view_rejected_doctors, name='view_rejected_doctors'),
 
 ]
