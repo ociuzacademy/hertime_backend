@@ -1,144 +1,125 @@
-from django.shortcuts import get_object_or_404, render
-from django.http import JsonResponse
-import google.generativeai as genai
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-api_key = os.getenv("GOOGLE_API_KEY")
-
-if not api_key:
-    print("❌ GOOGLE_API_KEY not found in .env file")
-
-# Configure Gemini API
-genai.configure(api_key=api_key)
-
-# Create model instance
-model = genai.GenerativeModel('gemini-2.5-flash')
-
-# Period-related keywords
-PERIOD_KEYWORDS = [
-    "period", "menstrual", "menstruation", "pms", "cramps",
-    "cycle", "bleeding", "ovulation", "menopause", "fertility",
-    "flow", "spotting", "pads", "tampons", "menstrual cup",
-    "dysmenorrhea", "amenorrhea", "menorrhagia", "endometriosis", "fibroids",
-    "ovaries", "uterus", "hormones", "estrogen", "progesterone",
-    "follicular phase", "luteal phase", "perimenopause", "pcos", "pmdd", "periods", "relief",
-    "medication", "pain relief", "cramp relief", "medicines", "medicine", "book", "books","suggestions", "suggestion", "skin care"
-]
-
-# Greeting keywords
-GREETINGS = ["hi", "hello", "hey", "good morning", "good evening", "good afternoon"]
-
-# def chatbot_view(request):
-#     if request.method == "POST":
-#         user_message = request.POST.get("message", "").lower().strip()
-
-#         if not user_message:
-#             return JsonResponse({"error": "Message is empty"}, status=400)
-
-#         # Check for greetings
-#         if any(greet in user_message for greet in GREETINGS):
-#             return JsonResponse({
-#                 "reply": "Hello! 😊 I'm Her Time, your menstrual health assistant. You can ask me about periods, ovulation, PMS, or cycle tracking."
-#             })
-
-#         # Check for period-related topics
-#         if not any(keyword in user_message for keyword in PERIOD_KEYWORDS):
-#             return JsonResponse({
-#                 "reply": "I can only answer questions related to menstrual health, periods, ovulation, and PMS."
-#             })
-
-#         try:
-#             # Keep Gemini focused on menstrual health
-#             response = model.generate_content(
-#                 f"You are a menstrual health assistant. Answer only about periods, cycles, ovulation, and PMS. Question: {user_message}"
-#             )
-#             return JsonResponse({"reply": response.text})
-#         except Exception as e:
-#             return JsonResponse({"error": str(e)}, status=500)
-
-#     return render(request, "chatbot.html")
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
-from django.conf import settings
-# Load environment variables
+
+# -----------------------------------------
+# Load Environment Variables
+# -----------------------------------------
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 
 if not api_key:
-    print("❌ GOOGLE_API_KEY not found in .env file")
+    raise ValueError("❌ GOOGLE_API_KEY not found in .env file")
+else:
+    print(f"✅ API Key loaded: {api_key[:10]}...")
 
-# Configure Gemini API
-genai.configure(api_key=settings.OPENAI_API_KEY)
+# -----------------------------------------
+# Configure Gemini
+# -----------------------------------------
+genai.configure(api_key=api_key)
 
-# Create model instance
-model = genai.GenerativeModel('gemini-2.5-flash') 
+# IMPORTANT: Use unique variable name to avoid
+# conflict with ML models like RandomForest
+gemini_model = genai.GenerativeModel("gemini-2.5-flash")
 
-# Period-related keywords
+
+# -----------------------------------------
+# Keywords
+# -----------------------------------------
+
 PERIOD_KEYWORDS = [
     "period", "menstrual", "menstruation", "pms", "cramps",
     "cycle", "bleeding", "ovulation", "menopause", "fertility",
     "flow", "spotting", "pads", "tampons", "menstrual cup",
-    "dysmenorrhea", "amenorrhea", "menorrhagia", "endometriosis", "fibroids",
-    "ovaries", "uterus", "hormones", "estrogen", "progesterone",
-    "follicular phase", "luteal phase", "perimenopause", "pcos", "pmdd", "periods", "relief",
-    "medication", "pain relief", "cramp relief", "medicines", "medicine", "book", "books",
-    "suggestions", "suggestion", "skin care", "tips", "advice"
+    "dysmenorrhea", "amenorrhea", "menorrhagia", "endometriosis",
+    "fibroids", "ovaries", "uterus", "hormones", "estrogen",
+    "progesterone", "follicular phase", "luteal phase",
+    "perimenopause", "pcos", "pmdd", "periods",
+    "relief", "medication", "pain relief", "cramp relief",
+    "medicines", "medicine", "book", "books",
+    "suggestions", "suggestion", "skin care",
+    "tips", "advice"
 ]
 
-# Greeting keywords
-GREETINGS = ["hi", "hello", "hey", "good morning", "good evening", "good afternoon"]
+GREETINGS = [
+    "hi", "hello", "hey",
+    "good morning", "good evening", "good afternoon"
+]
 
+
+# -----------------------------------------
+# Chatbot API View
+# -----------------------------------------
 
 class ChatbotAPIView(APIView):
+
     def post(self, request):
-        user_message = request.data.get("message", "").lower().strip()
+        user_message = request.data.get("message", "").strip().lower()
 
         if not user_message:
-            return Response({
-                "type": "error",
-                "reply": "Message is empty"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "type": "error",
+                    "reply": "Message is empty"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # Check for greetings
+        # Greeting check
         if any(greet in user_message for greet in GREETINGS):
-            return Response({
-                "type": "greeting",
-                "reply": "Hello! 😊 I'm Her Time, your menstrual health assistant. You can ask me about periods, ovulation, PMS, or cycle tracking."
-            })
+            return Response(
+                {
+                    "type": "greeting",
+                    "reply": "Hello! 😊 I'm Her Time, your menstrual health assistant. You can ask me about periods, ovulation, PMS, or cycle tracking."
+                }
+            )
 
-        # Check for period-related topics
+        # Check topic relevance
         if not any(keyword in user_message for keyword in PERIOD_KEYWORDS):
-            return Response({
-                "type": "not_related",
-                "reply": "I can only answer questions related to menstrual health, periods, ovulation, and PMS."
-            })
+            return Response(
+                {
+                    "type": "not_related",
+                    "reply": "I can only answer questions related to menstrual health, periods, ovulation, and PMS."
+                }
+            )
 
         try:
-            # Keep Gemini focused on menstrual health
-            response = model.generate_content(
-                f"You are a menstrual health assistant. Answer only about periods, cycles, ovulation, and PMS. Question: {user_message}"
+            # Generate response from Gemini
+            response = gemini_model.generate_content(
+                f"""
+                You are a professional menstrual health assistant.
+
+                Only answer questions related to:
+                - Periods
+                - Menstrual cycles
+                - PMS
+                - Ovulation
+                - Hormonal health
+
+                Give safe, helpful, and medically responsible advice.
+
+                Question: {user_message}
+                """
             )
-            return Response({
-                "type": "period_info",
-                "reply": response.text
-            })
+
+            return Response(
+                {
+                    "type": "period_info",
+                    "reply": response.text
+                }
+            )
+
         except Exception as e:
-            return Response({
-                "type": "error",
-                "reply": str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-
+            return Response(
+                {
+                    "type": "error",
+                    "reply": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 
