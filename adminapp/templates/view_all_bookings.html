@@ -42,7 +42,9 @@
                     <td>
                         {% if booking.status == 'booked' %}
                             <span class="badge bg-primary">Booked</span>
-                        {% elif booking.status == 'cancelled' %}
+                        {% elif booking.status == 'cancelled_by_user' %}
+                            <span class="badge bg-danger">Cancelled</span>
+                        {% elif booking.status == 'cancelled_by_doctor' %}
                             <span class="badge bg-danger">Cancelled</span>
                         {% elif booking.status == 'completed' %}
                             <span class="badge bg-success">Completed</span>

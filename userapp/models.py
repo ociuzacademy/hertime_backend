@@ -10,7 +10,8 @@ class tbl_register(models.Model):
     phone = models.CharField(max_length=15)
     address = models.TextField()
     age = models.IntegerField(default=1)
-    user_type = models.CharField(default='user', max_length=50)
+    role = models.CharField(default='user', max_length=50)
+    place=models.CharField(max_length=255)
 
 
     def __str__(self):
@@ -235,15 +236,15 @@ class HospitalBooking(models.Model):
 
 
 
-
-
 class HospitalDoctorFeedback(models.Model):
     user = models.ForeignKey(tbl_register, on_delete=models.CASCADE, related_name='hospital_feedbacks')
     doctor = models.ForeignKey('tbl_hospital_doctor_register', on_delete=models.CASCADE, related_name='hospital_feedbacks')
-    rating = models.IntegerField()  # e.g., 1–5 stars
+    
+    booking = models.ForeignKey(HospitalBooking, on_delete=models.CASCADE, related_name='feedbacks')  # ✅ ADD THIS
+    
+    rating = models.IntegerField()
     comments = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Feedback by {self.user.name} for {self.doctor.name}"
-

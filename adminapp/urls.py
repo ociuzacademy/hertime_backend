@@ -15,8 +15,8 @@ urlpatterns = [
     path("edit-book/<int:pk>/", views.edit_book, name="edit_book"),
     path("delete-book/<int:pk>/", views.delete_book, name="delete_book"),
     path("admin-view-orders/", views.admin_view_orders, name="admin_view_orders"),
-    path("admin/users/", views.admin_view_users, name="admin_view_users"),
-    path('admin/order-details/<str:order_type>/<int:order_id>/', views.admin_order_details, name='admin_order_details'),
+    path("users/", views.admin_view_users, name="admin_view_users"),
+    path('order-details/<str:order_type>/<int:order_id>/', views.admin_order_details, name='admin_order_details'),
     
     path('view_pending_doctors/', views.view_pending_doctors, name='view_pending_doctors'),
     path('view-all-bookings/', views.admin_view_hospital_bookings, name='view_all_bookings'),

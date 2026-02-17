@@ -1,125 +1,144 @@
+from django.shortcuts import get_object_or_404, render
+from django.http import JsonResponse
+import google.generativeai as genai
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+api_key = os.getenv("GOOGLE_API_KEY")
+
+if not api_key:
+    print("❌ GOOGLE_API_KEY not found in .env file")
+
+# Configure Gemini API
+genai.configure(api_key=api_key)
+
+# Create model instance
+model = genai.GenerativeModel('gemini-2.5-flash')
+
+# Period-related keywords
+PERIOD_KEYWORDS = [
+    "period", "menstrual", "menstruation", "pms", "cramps",
+    "cycle", "bleeding", "ovulation", "menopause", "fertility",
+    "flow", "spotting", "pads", "tampons", "menstrual cup",
+    "dysmenorrhea", "amenorrhea", "menorrhagia", "endometriosis", "fibroids",
+    "ovaries", "uterus", "hormones", "estrogen", "progesterone",
+    "follicular phase", "luteal phase", "perimenopause", "pcos", "pmdd", "periods", "relief",
+    "medication", "pain relief", "cramp relief", "medicines", "medicine", "book", "books","suggestions", "suggestion", "skin care"
+]
+
+# Greeting keywords
+GREETINGS = ["hi", "hello", "hey", "good morning", "good evening", "good afternoon"]
+
+# def chatbot_view(request):
+#     if request.method == "POST":
+#         user_message = request.POST.get("message", "").lower().strip()
+
+#         if not user_message:
+#             return JsonResponse({"error": "Message is empty"}, status=400)
+
+#         # Check for greetings
+#         if any(greet in user_message for greet in GREETINGS):
+#             return JsonResponse({
+#                 "reply": "Hello! 😊 I'm Her Time, your menstrual health assistant. You can ask me about periods, ovulation, PMS, or cycle tracking."
+#             })
+
+#         # Check for period-related topics
+#         if not any(keyword in user_message for keyword in PERIOD_KEYWORDS):
+#             return JsonResponse({
+#                 "reply": "I can only answer questions related to menstrual health, periods, ovulation, and PMS."
+#             })
+
+#         try:
+#             # Keep Gemini focused on menstrual health
+#             response = model.generate_content(
+#                 f"You are a menstrual health assistant. Answer only about periods, cycles, ovulation, and PMS. Question: {user_message}"
+#             )
+#             return JsonResponse({"reply": response.text})
+#         except Exception as e:
+#             return JsonResponse({"error": str(e)}, status=500)
+
+#     return render(request, "chatbot.html")
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
-
-# -----------------------------------------
-# Load Environment Variables
-# -----------------------------------------
+from django.conf import settings
+# Load environment variables
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 
 if not api_key:
-    raise ValueError("❌ GOOGLE_API_KEY not found in .env file")
-else:
-    print(f"✅ API Key loaded: {api_key[:10]}...")
+    print("❌ GOOGLE_API_KEY not found in .env file")
 
-# -----------------------------------------
-# Configure Gemini
-# -----------------------------------------
-genai.configure(api_key=api_key)
+# Configure Gemini API
+genai.configure(api_key=settings.OPENAI_API_KEY)
 
-# IMPORTANT: Use unique variable name to avoid
-# conflict with ML models like RandomForest
-gemini_model = genai.GenerativeModel("gemini-2.5-flash")
+# Create model instance
+model = genai.GenerativeModel('gemini-2.5-flash') 
 
-
-# -----------------------------------------
-# Keywords
-# -----------------------------------------
-
+# Period-related keywords
 PERIOD_KEYWORDS = [
     "period", "menstrual", "menstruation", "pms", "cramps",
     "cycle", "bleeding", "ovulation", "menopause", "fertility",
     "flow", "spotting", "pads", "tampons", "menstrual cup",
-    "dysmenorrhea", "amenorrhea", "menorrhagia", "endometriosis",
-    "fibroids", "ovaries", "uterus", "hormones", "estrogen",
-    "progesterone", "follicular phase", "luteal phase",
-    "perimenopause", "pcos", "pmdd", "periods",
-    "relief", "medication", "pain relief", "cramp relief",
-    "medicines", "medicine", "book", "books",
-    "suggestions", "suggestion", "skin care",
-    "tips", "advice"
+    "dysmenorrhea", "amenorrhea", "menorrhagia", "endometriosis", "fibroids",
+    "ovaries", "uterus", "hormones", "estrogen", "progesterone",
+    "follicular phase", "luteal phase", "perimenopause", "pcos", "pmdd", "periods", "relief",
+    "medication", "pain relief", "cramp relief", "medicines", "medicine", "book", "books",
+    "suggestions", "suggestion", "skin care", "tips", "advice"
 ]
 
-GREETINGS = [
-    "hi", "hello", "hey",
-    "good morning", "good evening", "good afternoon"
-]
+# Greeting keywords
+GREETINGS = ["hi", "hello", "hey", "good morning", "good evening", "good afternoon"]
 
-
-# -----------------------------------------
-# Chatbot API View
-# -----------------------------------------
 
 class ChatbotAPIView(APIView):
-
     def post(self, request):
-        user_message = request.data.get("message", "").strip().lower()
+        user_message = request.data.get("message", "").lower().strip()
 
         if not user_message:
-            return Response(
-                {
-                    "type": "error",
-                    "reply": "Message is empty"
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({
+                "type": "error",
+                "reply": "Message is empty"
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Greeting check
+        # Check for greetings
         if any(greet in user_message for greet in GREETINGS):
-            return Response(
-                {
-                    "type": "greeting",
-                    "reply": "Hello! 😊 I'm Her Time, your menstrual health assistant. You can ask me about periods, ovulation, PMS, or cycle tracking."
-                }
-            )
+            return Response({
+                "type": "greeting",
+                "reply": "Hello! 😊 I'm Her Time, your menstrual health assistant. You can ask me about periods, ovulation, PMS, or cycle tracking."
+            })
 
-        # Check topic relevance
+        # Check for period-related topics
         if not any(keyword in user_message for keyword in PERIOD_KEYWORDS):
-            return Response(
-                {
-                    "type": "not_related",
-                    "reply": "I can only answer questions related to menstrual health, periods, ovulation, and PMS."
-                }
-            )
+            return Response({
+                "type": "not_related",
+                "reply": "I can only answer questions related to menstrual health, periods, ovulation, and PMS."
+            })
 
         try:
-            # Generate response from Gemini
-            response = gemini_model.generate_content(
-                f"""
-                You are a professional menstrual health assistant.
-
-                Only answer questions related to:
-                - Periods
-                - Menstrual cycles
-                - PMS
-                - Ovulation
-                - Hormonal health
-
-                Give safe, helpful, and medically responsible advice.
-
-                Question: {user_message}
-                """
+            # Keep Gemini focused on menstrual health
+            response = model.generate_content(
+                f"You are a menstrual health assistant. Answer only about periods, cycles, ovulation, and PMS. Question: {user_message}"
             )
-
-            return Response(
-                {
-                    "type": "period_info",
-                    "reply": response.text
-                }
-            )
-
+            return Response({
+                "type": "period_info",
+                "reply": response.text
+            })
         except Exception as e:
-            return Response(
-                {
-                    "type": "error",
-                    "reply": str(e)
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({
+                "type": "error",
+                "reply": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
 
 
 
@@ -175,8 +194,9 @@ class tbl_registerViewSet(viewsets.ModelViewSet):
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import tbl_register
+from .models import tbl_register, tbl_hospital_doctor_register
 from .serializers import LoginSerializer
+
 
 @api_view(['POST'])
 def login_view(request):
@@ -185,24 +205,61 @@ def login_view(request):
     if serializer.is_valid():
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
+        role = serializer.validated_data['role']
 
-        try:
-            user = tbl_register.objects.get(email=email, password=password)
-            return Response({
-                "id": user.id,
-                "name": user.name,
-                "email": user.email,
-                "password": user.password  # ⚠️ Usually we should NOT send plain password, but you asked for it
-            }, status=status.HTTP_200_OK)
+        # 🔹 USER LOGIN
+        if role == 'user':
+            try:
+                user = tbl_register.objects.get(
+                    email=email,
+                    password=password,
+                    role='user'
+                )
+                return Response({
+                    "id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                    "role": user.role
+                }, status=status.HTTP_200_OK)
 
-        except tbl_register.DoesNotExist:
+            except tbl_register.DoesNotExist:
+                return Response(
+                    {"error": "Invalid email or password"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+        # 🔹 HOSPITAL DOCTOR LOGIN
+        elif role == 'hospital_doctor':
+            try:
+                doctor = tbl_hospital_doctor_register.objects.get(
+                    email=email,
+                    password=password,
+                    role='hospital_doctor',
+                    status='approved'
+                )
+                return Response({
+                    "id": doctor.id,
+                    "name": doctor.name,
+                    "email": doctor.email,
+                    "role": doctor.role,
+                    "hospital": doctor.hospital_name,
+                    "specialization": doctor.specialization
+                }, status=status.HTTP_200_OK)
+
+            except tbl_hospital_doctor_register.DoesNotExist:
+                return Response(
+                    {"error": "Invalid email or password or not approved"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+        # 🔹 INVALID ROLE
+        else:
             return Response(
-                {"error": "Invalid email or password"},
-                status=status.HTTP_401_UNAUTHORIZED
+                {"error": "Invalid role"},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 
@@ -635,7 +692,7 @@ class PCODPredictionAPI(APIView):
                 "status": "success",
                 "message": "PCOD prediction generated successfully",
                 "user_id": user.id,
-                "user_name": user.name,
+                "user_name":user.name,
                 "prediction_id": saved_obj.id,
                 "result": result_label,
                 "probabilities": prob_map,
@@ -944,29 +1001,6 @@ def book_hospital_doctor_slot(request):
         "time": data['time']
     }, status=201)
 
-
-
-# 🧠 User Adds Feedback
-@api_view(['POST'])
-def add_hospital_doctor_feedback(request):
-    user_id = request.data.get('user')
-    doctor_id = request.data.get('doctor')
-    rating = request.data.get('rating')
-    comments = request.data.get('comments', '')
-
-    try:
-        user = tbl_register.objects.get(id=user_id)
-        doctor = tbl_hospital_doctor_register.objects.get(id=doctor_id)
-    except (tbl_register.DoesNotExist, tbl_hospital_doctor_register.DoesNotExist):
-        return Response({'error': 'Invalid user or doctor ID'}, status=status.HTTP_404_NOT_FOUND)
-
-    feedback = HospitalDoctorFeedback.objects.create(
-        user=user, doctor=doctor, rating=rating, comments=comments
-    )
-    serializer = HospitalDoctorFeedbackSerializer(feedback)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
 # 🧠 Doctor Views Feedback
 @api_view(['GET'])
 def view_hospital_doctor_feedback(request, doctor_id):
@@ -1023,6 +1057,10 @@ class user_view_booking_hospital(APIView):
                 "patient_name": booking.user.name if booking.user else "User removed",
                 "date": booking.date,
                 "time": booking.time,
+                "place":booking.doctor.place if booking.doctor else None,
+                "hospital_name":booking.doctor.hospital_name if booking.doctor else None,
+                "doctor_id":booking.doctor_id,
+                "status":booking.status
                 # "booked_at": getattr(booking, 'created_at', None),
             })
         return Response(data, status=status.HTTP_200_OK)
@@ -1035,12 +1073,17 @@ class doctor_view_booking_hospital(APIView):
         for booking in bookings:
             data.append({
                 "id": booking.id,
-                "user": booking.user.id,
-                "user_name": booking.user.name,
+                "doctor": booking.doctor.id if booking.doctor else None,
+                "doctor_name": booking.doctor.name if booking.doctor else "Doctor removed",
+                "patient": booking.user.id,
+                "patient_name": booking.user.name if booking.user else "User removed",
                 "date": booking.date,
                 "time": booking.time,
-                "status": booking.status,
-                # "booked_at": booking.created_at,
+                "place":booking.doctor.place if booking.doctor else None,
+                "hospital_name":booking.doctor.hospital_name if booking.doctor else None,
+                "doctor_id":booking.doctor_id,
+                "status":booking.status
+                # "booked_at": getattr(booking, 'created_at', None),
             })
         return Response(data, status=status.HTTP_200_OK)
     
@@ -1209,3 +1252,126 @@ class DoctorCompleteBookingAPI(APIView):
                 {"error": "Doctor not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+
+
+@api_view(['POST'])
+def add_hospital_doctor_feedback(request):
+    user_id = request.data.get('user')
+    doctor_id = request.data.get('doctor')
+    booking_id = request.data.get('booking')  # ✅ NEW
+    rating = request.data.get('rating')
+    comments = request.data.get('comments', '')
+
+    try:
+        user = tbl_register.objects.get(id=user_id)
+        doctor = tbl_hospital_doctor_register.objects.get(id=doctor_id)
+        booking = HospitalBooking.objects.get(id=booking_id)
+
+        # ✅ Validate booking belongs to this user & doctor
+        if booking.user.id != user.id or booking.doctor.id != doctor.id:
+            return Response(
+                {"error": "Booking does not match user or doctor"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    except (tbl_register.DoesNotExist,
+            tbl_hospital_doctor_register.DoesNotExist,
+            HospitalBooking.DoesNotExist):
+        return Response(
+            {'error': 'Invalid user, doctor, or booking ID'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Optional: Prevent duplicate feedback for same booking
+    if HospitalDoctorFeedback.objects.filter(booking=booking).exists():
+        return Response(
+            {"error": "Feedback already given for this booking."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    feedback = HospitalDoctorFeedback.objects.create(
+        user=user,
+        doctor=doctor,
+        booking=booking,  # ✅ SAVE BOOKING
+        rating=rating,
+        comments=comments
+    )
+
+    serializer = HospitalDoctorFeedbackSerializer(feedback)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+
+@api_view(['GET'])
+def view_feedback_by_booking(request, booking_id):
+    try:
+        booking = HospitalBooking.objects.get(id=booking_id)
+
+        feedback = HospitalDoctorFeedback.objects.filter(booking=booking)
+
+        if not feedback.exists():
+            return Response(
+                {"message": "No feedback found for this booking."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = HospitalDoctorFeedbackSerializer(feedback, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except HospitalBooking.DoesNotExist:
+        return Response(
+            {"error": "Invalid booking ID"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+
+# @api_view(['GET'])
+# def view_feedback_by_booking(request, booking_id):
+#     user_id = request.query_params.get('user')  # optional
+#     doctor_id = request.query_params.get('doctor')  # optional
+
+#     try:
+#         booking = HospitalBooking.objects.get(id=booking_id)
+
+#         # If user checking
+#         if user_id and booking.user.id != int(user_id):
+#             return Response({"error": "Not authorized"}, status=403)
+
+#         # If doctor checking
+#         if doctor_id and booking.doctor.id != int(doctor_id):
+#             return Response({"error": "Not authorized"}, status=403)
+
+#         feedback = HospitalDoctorFeedback.objects.filter(booking=booking)
+
+#         serializer = HospitalDoctorFeedbackSerializer(feedback, many=True)
+#         return Response(serializer.data, status=200)
+
+#     except HospitalBooking.DoesNotExist:
+#         return Response({"error": "Invalid booking ID"}, status=404)
+ 
+
+# @api_view(['GET'])
+# def view_feedback_by_booking(request, booking_id):
+#     try:
+#         booking = HospitalBooking.objects.get(id=booking_id)
+
+#         feedback = HospitalDoctorFeedback.objects.filter(booking_id=booking_id)
+
+#         if not feedback.exists():
+#             return Response(
+#                 {"message": "No feedback found for this booking."},
+#                 status=404
+#             )
+
+#         serializer = HospitalDoctorFeedbackSerializer(feedback, many=True)
+#         return Response(serializer.data, status=200)
+
+#     except HospitalBooking.DoesNotExist:
+#         return Response(
+#             {"error": "Invalid booking ID"},
+#             status=404
+#         )

@@ -74,6 +74,14 @@ urlpatterns = [
    path('user/<int:user_id>/hospital/bookings/', views.user_view_booking_hospital.as_view(), name='user_view_hospital_bookings'),
    path('hospital/doctor/<int:doctor_id>/bookings/', views.doctor_view_booking_hospital.as_view(), name='doctor_view_booking_hospital'),
    path('prediction-results/<int:user_id>/', ViewPredictionResultsByUser.as_view(), name='view_prediction_results_by_user'),
+   path(
+    'booking/<int:booking_id>/feedback/',
+    views.view_feedback_by_booking,
+    name='view_feedback_by_booking'
+   ),
+   
+
+   
 ] 
 
 
